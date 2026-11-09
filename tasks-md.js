@@ -75,7 +75,11 @@
 
   function serialize(t, ref) {
     if (t.status === 'done') {
-      const p = [clean(t.text), 'сделано: ' + dm(t.doneDate || iso(ref || new Date()))];
+      // срок и время остаются: в день, когда задачу закрыли, она стоит на своём месте зачёркнутой
+      const p = [clean(t.text)];
+      if (t.date) p.push('срок: ' + dm(t.date));
+      if (t.time) p.push('время: ' + t.time);
+      p.push('сделано: ' + dm(t.doneDate || iso(ref || new Date())));
       if (t.project) p.push(clean(t.project));
       return '- [x] ' + p.join(' | ');
     }

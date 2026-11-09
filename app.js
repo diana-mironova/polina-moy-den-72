@@ -478,15 +478,20 @@ function renderTasks() {
   const t = today(), f = S.taskFilter;
   const list = S.tasks.filter(x => f === 'all' || x.project === f);
   const active = list.filter(x => x.status !== 'done').sort(sortTasks);
-  const done = list.filter(x => x.status === 'done').sort((a, b) => (b.doneDate || '').localeCompare(a.doneDate || ''));
-  const overdue = active.filter(x => x.date && x.date < t), now = active.filter(x => x.date === t);
+  // Закрытая сегодня задача остаётся на своём месте зачёркнутой, на следующий день уходит в «Готово»
+  const doneNow = list.filter(x => x.status === 'done' && x.doneDate === t);
+  const done = list.filter(x => x.status === 'done' && x.doneDate !== t).sort((a, b) => (b.doneDate || '').localeCompare(a.doneDate || ''));
+  const shown = active.concat(doneNow).sort(sortTasks);
+  const open = x => x.status !== 'done';
+  const overdueAll = shown.filter(x => x.date && x.date < t), nowAll = shown.filter(x => x.date === t);
+  const overdue = overdueAll.filter(open), now = nowAll.filter(open);
   const groups = [];
-  if (overdue.length) groups.push(['Просрочено', overdue, COLORS.red, true]);
-  if (now.length) groups.push(['Сегодня', now, COLORS.orange]);
+  if (overdueAll.length) groups.push(['Просрочено', overdueAll, COLORS.red, true]);
+  if (nowAll.length) groups.push(['Сегодня', nowAll, COLORS.orange]);
   const later = {};
-  for (const x of active.filter(x => x.date && x.date > t)) (later[x.date] = later[x.date] || []).push(x);
+  for (const x of shown.filter(x => x.date && x.date > t)) (later[x.date] = later[x.date] || []).push(x);
   for (const d of Object.keys(later).sort()) groups.push([dayLabel(d)[0].toUpperCase() + dayLabel(d).slice(1), later[d]]);
-  const nodate = active.filter(x => !x.date);
+  const nodate = shown.filter(x => !x.date);
   if (nodate.length) groups.push(['Без срока', nodate]);
   const projs = projects();
 
@@ -506,7 +511,7 @@ function renderTasks() {
   </div>
 
   ${S.tasksError === 'net' ? '<div class="card empty-note" style="margin-top:12px">Нет связи с GitHub. <button class="to-plan" style="background:var(--blue)" data-act="tasks-reload">Обновить</button></div>' : ''}
-  ${groups.map(([title, items, c, dates]) => `<h2${c ? ` style="color:${c}"` : ''}>${esc(title)} <span class="muted">${items.length}</span></h2>
+  ${groups.map(([title, items, c, dates]) => `<h2${c ? ` style="color:${c}"` : ''}>${esc(title)} <span class="muted">${items.filter(open).length || '✓'}</span></h2>
     <div class="list">${items.map(x => taskRow(x, !!dates)).join('')}</div>`).join('')}
   ${!S.tasksError && S.tasksLoaded && !active.length ? '<div class="card empty-note" style="margin-top:12px">Все задачи закрыты.</div>' : ''}
   ${done.length ? `<h2><button data-act="toggle-done" style="font-weight:700">Готово <span class="muted">${done.length} · ${S.showDone ? 'скрыть' : 'показать'}</span></button></h2>
