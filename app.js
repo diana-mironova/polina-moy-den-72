@@ -141,6 +141,29 @@ function toast(text) {
 
 /* ---------- привычки ---------- */
 const hColor = h => COLORS[h.color] || h.color || COLORS.blue;
+
+// Прошлая версия приложения хранила в Telegram значок названием (camera, walk…) и цвет кодом (#FF2D78).
+// Переводим такие записи в эмодзи и названия цветов, незнакомый значок заменяем первым свободным.
+const OLD_ICONS = { camera: '📸', phoneOff: '📵', walk: '🚶‍♀️', drop: '💧', book: '📚', dumbbell: '💪', moon: '😴',
+  sun: '☀️', heart: '🧘‍♀️', pencil: '✍️', coffee: '🥗', leaf: '🌿', music: '🎧', apple: '🍎', bed: '😴', brush: '🎨', sparkle: '☀️' };
+const OLD_COLORS = { '#FF2D78': 'pink', '#FF3B30': 'red', '#FF8A00': 'orange', '#FFC400': 'yellow', '#22C55E': 'green',
+  '#00C2B2': 'mint', '#19B5FE': 'teal', '#2F6BFF': 'blue', '#5B4BFF': 'indigo', '#B44CFF': 'purple' };
+function fixOldHabits() {
+  let changed = false;
+  const out = [];
+  for (const h of S.habits || []) {
+    const x = { ...h };
+    if (!ICONS.includes(x.icon)) {
+      const used = out.map(o => o.icon).concat((S.habits || []).map(o => OLD_ICONS[o.icon] || o.icon));
+      x.icon = OLD_ICONS[x.icon] || ICONS.find(i => !used.includes(i)) || ICONS[0];
+      changed = true;
+    }
+    if (!COLORS[x.color] && OLD_COLORS[String(x.color).toUpperCase()]) { x.color = OLD_COLORS[String(x.color).toUpperCase()]; changed = true; }
+    out.push(x);
+  }
+  S.habits = out;
+  if (changed) persist('habits');
+}
 const marked = (id, d) => (S.marks[d] || []).includes(id);
 function toggleMark(id, d) {
   const a = [...(S.marks[d] || [])], i = a.indexOf(id);
@@ -965,6 +988,7 @@ async function init() {
   S.ghToken = data.gh_token || '';
   await Promise.all([loadTasks(), loadContent()]);
   if (!data.habits) { S.habits = DEFAULT_HABITS.map(h => ({ ...h })); persist('habits'); }
+  else fixOldHabits();
   S.plan = { status: {}, added: [], moved: [], ...S.plan };
   render();
   setInterval(tickTimer, 500);
