@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Мой день</title>
+  <script src="telegram-web-app.js"></script>
+  <link rel="stylesheet" href="app.css?v=fc2c93d1">
+</head>
+<body>
+  <main id="app">
+    <section class="screen" id="s-today"></section>
+    <section class="screen" id="s-tasks"></section>
+    <section class="screen" id="s-habits"></section>
+    <section class="screen" id="s-content"></section>
+    <section class="screen" id="s-money"></section>
+  </main>
+
+  <button class="fab" data-act="story" aria-label="Итог дня">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L19.5 9.5 13.9 11.4 12 17l-1.9-5.6L4.5 9.5l5.6-1.9L12 2zm7 12l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9L19 14zM5 15l.7 1.8 1.8.7-1.8.7L5 20l-.7-1.8-1.8-.7 1.8-.7L5 15z"/></svg>
+    <span>Итог дня</span>
+  </button>
+
+  <nav class="tabbar"><div class="in" id="tabs"></div></nav>
+  <canvas id="confetti"></canvas>
+  <script src="tasks-md.js?v=fc2c93d1"></script>
+  <script src="app.js?v=fc2c93d1"></script>
+</body>
+</html>
